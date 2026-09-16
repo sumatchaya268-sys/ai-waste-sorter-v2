@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Camera from '@/components/Camera';
 import UploadBox from '@/components/UploadBox';
 import StatCard from '@/components/StatCard';
-import { Trash2, Recycle, AlertTriangle, Package } from 'lucide-react';
+import { Trash2, Recycle, AlertTriangle, Package, CheckCircle } from 'lucide-react';
 
 type Mode = 'general' | 'school';
 
@@ -15,26 +15,42 @@ export default function Home() {
   const [inputMethod, setInputMethod] = useState<'camera' | 'upload'>('camera');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [stats, setStats] = useState({ total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 });
+  const [schoolStats, setSchoolStats] = useState({ totalScanned: 0, totalDisposed: 0, recycle: 0, general: 0, organic: 0, hazardous: 0 });
 
   useEffect(() => {
     // Load stats from localStorage
     const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
     let validWasteCount = 0;
     const newStats = { total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 };
+    const newSchoolStats = { totalScanned: 0, totalDisposed: 0, recycle: 0, general: 0, organic: 0, hazardous: 0 };
     
     history.forEach((item: any) => {
       // ข้ามการนับสถิติถ้า AI บอกว่าไม่ใช่ขยะ
       if (item.category === 'ไม่ใช่ขยะ' || item.category.includes('ไม่ใช่ขยะ')) return;
       
-      validWasteCount++;
-      if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newStats.recycle++;
-      else if (item.category.includes('อันตราย') || item.isHardToDispose) newStats.hazardous++;
-      else if (item.category.includes('เปียก') || item.category.includes('อาหาร') || item.category.includes('ใบไม้')) newStats.organic++;
-      else newStats.general++;
+      if (item.mode === 'general' || !item.mode) {
+        if (item.isDisposed) {
+          validWasteCount++;
+          if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newStats.recycle++;
+          else if (item.category.includes('อันตราย') || item.isHardToDispose) newStats.hazardous++;
+          else if (item.category.includes('เปียก') || item.category.includes('อาหาร') || item.category.includes('ใบไม้')) newStats.organic++;
+          else newStats.general++;
+        }
+      } else if (item.mode === 'school') {
+        newSchoolStats.totalScanned++;
+        if (item.isDisposed) {
+          newSchoolStats.totalDisposed++;
+          if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newSchoolStats.recycle++;
+          else if (item.category.includes('อันตราย') || item.isHardToDispose) newSchoolStats.hazardous++;
+          else if (item.category.includes('เปียก') || item.category.includes('อาหาร') || item.category.includes('ใบไม้')) newSchoolStats.organic++;
+          else newSchoolStats.general++;
+        }
+      }
     });
     
     newStats.total = validWasteCount;
     setStats(newStats);
+    setSchoolStats(newSchoolStats);
   }, []);
 
   const handleImageSubmit = async (imageSrc: string) => {
@@ -52,15 +68,17 @@ export default function Home() {
       const data = await response.json();
       
       if (response.ok) {
-        // บันทึกลงประวัติเฉพาะตอนที่เป็นขยะจริงๆ เท่านั้น
+        let currentRecord = { ...data, mode };
         if (data.category !== 'ไม่ใช่ขยะ' && !data.category.includes('ไม่ใช่ขยะ')) {
           const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
-          const newRecord = { ...data, date: new Date().toISOString() };
+          const id = Date.now().toString();
+          const newRecord = { ...data, id, date: new Date().toISOString(), isDisposed: false, mode };
           localStorage.setItem('wasteHistory', JSON.stringify([newRecord, ...history]));
+          currentRecord = newRecord;
         }
         
         // Pass result via sessionStorage for the result page
-        sessionStorage.setItem('currentResult', JSON.stringify(data));
+        sessionStorage.setItem('currentResult', JSON.stringify(currentRecord));
         router.push('/result');
       } else {
         alert('เกิดข้อผิดพลาด: ' + data.error);
@@ -82,13 +100,31 @@ export default function Home() {
 
       {/* Stats Dashboard */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">สถิติการแยกขยะของคุณ</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard title="ทั้งหมด" value={stats.total} icon={Package} color="text-blue-600" />
-          <StatCard title="รีไซเคิล" value={stats.recycle} icon={Recycle} color="text-green-600" />
-          <StatCard title="ทั่วไป" value={stats.general} icon={Trash2} color="text-gray-600" />
-          <StatCard title="อันตราย" value={stats.hazardous} icon={AlertTriangle} color="text-red-600" />
-        </div>
+        {mode === 'general' ? (
+          <>
+            <h2 className="text-2xl font-semibold mb-4">สถิติการแยกขยะของคุณ (ส่วนตัว)</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard title="จัดการแล้ว" value={stats.total} icon={Package} color="text-blue-600" />
+              <StatCard title="รีไซเคิล" value={stats.recycle} icon={Recycle} color="text-green-600" />
+              <StatCard title="ทั่วไป" value={stats.general} icon={Trash2} color="text-gray-600" />
+              <StatCard title="อันตราย" value={stats.hazardous} icon={AlertTriangle} color="text-red-600" />
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-semibold mb-4 text-blue-800">📊 สถิติภาพรวมโรงเรียน</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              <StatCard title="สแกนทั้งหมด" value={schoolStats.totalScanned} icon={Package} color="text-indigo-600" />
+              <StatCard title="ยืนยันการจัดการแล้ว" value={schoolStats.totalDisposed} icon={CheckCircle} color="text-green-600" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard title="รีไซเคิล" value={schoolStats.recycle} icon={Recycle} color="text-blue-500" />
+              <StatCard title="ทั่วไป" value={schoolStats.general} icon={Trash2} color="text-gray-500" />
+              <StatCard title="เศษอาหาร" value={schoolStats.organic} icon={Package} color="text-yellow-600" />
+              <StatCard title="อันตราย" value={schoolStats.hazardous} icon={AlertTriangle} color="text-red-500" />
+            </div>
+          </>
+        )}
       </section>
 
       {/* Mode Selection */}

@@ -87,6 +87,31 @@ export default function ResultPage() {
               {result.disposalSteps}
             </div>
           </div>
+
+          {result.category !== 'ไม่ใช่ขยะ' && !result.category.includes('ไม่ใช่ขยะ') && (
+            <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col items-center">
+              <p className="text-gray-500 text-sm mb-4">
+                *การยืนยันเป็นข้อมูลที่คุณแจ้งด้วยตนเอง เพื่อบันทึกเป็นสถิติการจัดการขยะ
+              </p>
+              <button
+                onClick={() => {
+                  if (result.id) {
+                    const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
+                    const recordIndex = history.findIndex((h: any) => h.id === result.id);
+                    if (recordIndex !== -1) {
+                      history[recordIndex].isDisposed = true;
+                      localStorage.setItem('wasteHistory', JSON.stringify(history));
+                    }
+                  }
+                  alert('บันทึกการจัดการขยะเรียบร้อยแล้ว ขอบคุณที่ช่วยรักษาสิ่งแวดล้อม!');
+                  router.push('/');
+                }}
+                className="w-full sm:w-auto px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-lg"
+              >
+                ✅ ฉันทิ้ง/จัดการแล้ว
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </main>
