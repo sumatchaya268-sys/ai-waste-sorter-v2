@@ -56,13 +56,40 @@ export default function Home() {
   const handleImageSubmit = async (imageSrc: string) => {
     setIsAnalyzing(true);
     try {
+      // Compress image to prevent "Payload Too Large" error
+      const compressImage = (base64Str: string, maxWidth = 800, maxHeight = 800): Promise<string> => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.src = base64Str;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > height && width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            } else if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+        });
+      };
+      
+      const compressedImage = await compressImage(imageSrc);
+
       // Store current image temporarily to pass to result page
-      sessionStorage.setItem('currentImage', imageSrc);
+      sessionStorage.setItem('currentImage', compressedImage);
       
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageSrc, mode }),
+        body: JSON.stringify({ image: compressedImage, mode }),
       });
       
       const data = await response.json();

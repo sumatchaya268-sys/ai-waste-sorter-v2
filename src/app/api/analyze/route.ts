@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { analyzeWaste } from '@/lib/ai';
 
+export const maxDuration = 60; // Prevent Vercel 10s timeout
+
 export async function POST(req: Request) {
   try {
     const { image, mode } = await req.json();
