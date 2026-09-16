@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function analyzeWaste(imageBase64: string, mode: 'general' | 'school') {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+  // Support multiple API keys separated by commas to bypass free tier rate limits
+  const apiKeys = (process.env.GEMINI_API_KEY || '').split(',').map(k => k.trim()).filter(Boolean);
+  const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)] || '';
+  
+  const genAI = new GoogleGenerativeAI(randomKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' }); // Updated to working 2026 model
 
   // Remove the data URL prefix if present
