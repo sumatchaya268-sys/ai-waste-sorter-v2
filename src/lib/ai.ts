@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 export async function analyzeWaste(imageBase64: string, mode: 'general' | 'school') {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
   const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' }); // Updated to working 2026 model
 
   // Remove the data URL prefix if present
@@ -44,12 +43,15 @@ export async function analyzeWaste(imageBase64: string, mode: 'general' | 'schoo
     const response = await result.response;
     const text = response.text();
     
-    // Clean up potential markdown formatting in the response
-    const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    // Extract JSON block using regex to avoid parsing errors from extra text
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('AI did not return valid JSON. Raw output: ' + text);
+    }
     
-    return JSON.parse(cleanedText);
-  } catch (error) {
+    return JSON.parse(jsonMatch[0]);
+  } catch (error: any) {
     console.error('Error analyzing waste:', error);
-    throw new Error('Failed to analyze waste');
+    throw new Error(error.message || 'Failed to analyze waste');
   }
 }
