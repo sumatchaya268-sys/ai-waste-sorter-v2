@@ -33,7 +33,7 @@ export default function Home() {
           validWasteCount++;
           if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newStats.recycle++;
           else if (item.category.includes('อันตราย') || item.isHardToDispose) newStats.hazardous++;
-          else if (item.category.includes('เปียก') || item.category.includes('อาหาร') || item.category.includes('ใบไม้')) newStats.organic++;
+          else if (item.category.includes('ขยะเปียก') || item.category.includes('เศษอาหาร') || item.category.includes('ใบไม้')) newStats.organic++;
           else newStats.general++;
         }
       } else if (item.mode === 'school') {
@@ -42,7 +42,7 @@ export default function Home() {
           newSchoolStats.totalDisposed++;
           if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newSchoolStats.recycle++;
           else if (item.category.includes('อันตราย') || item.isHardToDispose) newSchoolStats.hazardous++;
-          else if (item.category.includes('เปียก') || item.category.includes('อาหาร') || item.category.includes('ใบไม้')) newSchoolStats.organic++;
+          else if (item.category.includes('ขยะเปียก') || item.category.includes('เศษอาหาร') || item.category.includes('ใบไม้')) newSchoolStats.organic++;
           else newSchoolStats.general++;
         }
       }
