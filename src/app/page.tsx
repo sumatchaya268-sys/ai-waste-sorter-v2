@@ -9,19 +9,31 @@ import { Trash2, Recycle, AlertTriangle, Package, CheckCircle } from 'lucide-rea
 
 type Mode = 'general' | 'school';
 
+const tips = [
+  "💡 ก่อนทิ้งขวดพลาสติก ควรเทของเหลวออกก่อน",
+  "💡 ล้างภาชนะที่มีเศษอาหารก่อนนำไปรีไซเคิล",
+  "💡 ถ่านไฟฉายและแบตเตอรี่ไม่ควรทิ้งรวมกับขยะทั่วไป",
+  "💡 แยกเศษอาหารออกจากขยะประเภทอื่นก่อนทิ้ง",
+  "💡 กล่องกระดาษที่เปียกหรือเปื้อนอาหารอาจไม่เหมาะสำหรับการรีไซเคิล"
+];
+
 export default function Home() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('general');
   const [inputMethod, setInputMethod] = useState<'camera' | 'upload'>('camera');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [stats, setStats] = useState({ total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 });
+  const [stats, setStats] = useState({ totalScanned: 0, total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 });
   const [schoolStats, setSchoolStats] = useState({ totalScanned: 0, totalDisposed: 0, recycle: 0, general: 0, organic: 0, hazardous: 0 });
+  const [dailyTip, setDailyTip] = useState(tips[0]);
 
   useEffect(() => {
+    // Set random tip
+    setDailyTip(tips[Math.floor(Math.random() * tips.length)]);
+
     // Load stats from localStorage
     const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
     let validWasteCount = 0;
-    const newStats = { total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 };
+    const newStats = { totalScanned: 0, total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 };
     const newSchoolStats = { totalScanned: 0, totalDisposed: 0, recycle: 0, general: 0, organic: 0, hazardous: 0 };
     
     history.forEach((item: any) => {
@@ -29,6 +41,7 @@ export default function Home() {
       if (item.category === 'ไม่ใช่ขยะ' || item.category.includes('ไม่ใช่ขยะ')) return;
       
       if (item.mode === 'general' || !item.mode) {
+        newStats.totalScanned++;
         if (item.isDisposed) {
           validWasteCount++;
           if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newStats.recycle++;
@@ -119,99 +132,141 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-8 max-w-4xl mx-auto font-sans">
-      <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold text-green-700 mb-2">AI Waste Sorter</h1>
-        <p className="text-gray-600">ระบบช่วยแยกขยะอัจฉริยะด้วย AI</p>
+    <main className="min-h-screen p-6 md:p-8 max-w-3xl mx-auto font-sans bg-gray-50">
+      <header className="mb-8 text-center pt-4">
+        <h1 className="text-4xl font-extrabold text-green-700 mb-3 tracking-tight">AI Waste Sorter</h1>
+        <p className="text-gray-600 mb-4 text-lg">ระบบช่วยแยกขยะอัจฉริยะด้วย AI</p>
+        <span className="text-sm font-semibold text-green-700 bg-green-100 px-5 py-2 rounded-full shadow-sm">
+          สแกน • วิเคราะห์ • จัดการ • ติดตาม
+        </span>
       </header>
 
-      {/* Stats Dashboard */}
-      <section className="mb-12">
-        {mode === 'general' ? (
-          <>
-            <h2 className="text-2xl font-semibold mb-4">สถิติการแยกขยะของคุณ (ส่วนตัว)</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard title="จัดการแล้ว" value={stats.total} icon={Package} color="text-blue-600" />
-              <StatCard title="รีไซเคิล" value={stats.recycle} icon={Recycle} color="text-green-600" />
-              <StatCard title="ทั่วไป" value={stats.general} icon={Trash2} color="text-gray-600" />
-              <StatCard title="อันตราย" value={stats.hazardous} icon={AlertTriangle} color="text-red-600" />
-            </div>
-          </>
-        ) : (
-          <>
-            <h2 className="text-2xl font-semibold mb-4 text-blue-800">📊 สถิติภาพรวมโรงเรียน</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-              <StatCard title="สแกนทั้งหมด" value={schoolStats.totalScanned} icon={Package} color="text-indigo-600" />
-              <StatCard title="ยืนยันการจัดการแล้ว" value={schoolStats.totalDisposed} icon={CheckCircle} color="text-green-600" />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard title="รีไซเคิล" value={schoolStats.recycle} icon={Recycle} color="text-blue-500" />
-              <StatCard title="ทั่วไป" value={schoolStats.general} icon={Trash2} color="text-gray-500" />
-              <StatCard title="เศษอาหาร" value={schoolStats.organic} icon={Package} color="text-yellow-600" />
-              <StatCard title="อันตราย" value={schoolStats.hazardous} icon={AlertTriangle} color="text-red-500" />
-            </div>
-          </>
-        )}
-      </section>
-
       {/* Mode Selection */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-center">เลือกโหมดการใช้งาน</h2>
-        <div className="flex justify-center space-x-4">
-          <button
+      <section className="mb-10">
+        <h2 className="text-xl font-bold mb-5 text-gray-800 flex items-center">
+          <span className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+          เลือกโหมดการใช้งาน
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div 
             onClick={() => setMode('general')}
-            className={`px-6 py-3 rounded-xl font-medium transition ${
-              mode === 'general' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+              mode === 'general' ? 'border-green-500 bg-green-50 shadow-md' : 'border-gray-200 bg-white hover:border-green-300 hover:bg-gray-50'
             }`}
           >
-            โหมดทั่วไป
-          </button>
-          <button
+            <div className="flex items-center mb-2">
+              <div className={`w-5 h-5 rounded-full mr-3 flex items-center justify-center border-2 ${mode === 'general' ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                {mode === 'general' && <div className="w-2 h-2 bg-white rounded-full"></div>}
+              </div>
+              <h3 className={`text-lg font-bold ${mode === 'general' ? 'text-green-800' : 'text-gray-700'}`}>โหมดทั่วไป</h3>
+            </div>
+            <p className="text-gray-500 text-sm ml-8 leading-relaxed">ช่วยผู้ใช้แยกและจัดการขยะในชีวิตประจำวัน</p>
+          </div>
+
+          <div 
             onClick={() => setMode('school')}
-            className={`px-6 py-3 rounded-xl font-medium transition ${
-              mode === 'school' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+              mode === 'school' ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'
             }`}
           >
-            โหมดโรงเรียน
-          </button>
+            <div className="flex items-center mb-2">
+              <div className={`w-5 h-5 rounded-full mr-3 flex items-center justify-center border-2 ${mode === 'school' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
+                {mode === 'school' && <div className="w-2 h-2 bg-white rounded-full"></div>}
+              </div>
+              <h3 className={`text-lg font-bold ${mode === 'school' ? 'text-blue-800' : 'text-gray-700'}`}>โหมดโรงเรียน</h3>
+            </div>
+            <p className="text-gray-500 text-sm ml-8 leading-relaxed">ช่วยจัดการขยะในโรงเรียนและสรุปข้อมูลการใช้งาน</p>
+          </div>
         </div>
       </section>
 
       {/* Input Method */}
-      <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex justify-center space-x-4 mb-6">
-          <button
-            onClick={() => setInputMethod('camera')}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              inputMethod === 'camera' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            ถ่ายภาพ
-          </button>
-          <button
-            onClick={() => setInputMethod('upload')}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              inputMethod === 'upload' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            อัปโหลด
-          </button>
-        </div>
+      <section className="mb-10">
+        <h2 className="text-xl font-bold mb-5 text-gray-800 flex items-center">
+          <span className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+          สแกนเพื่อแยกประเภท
+        </h2>
+        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200">
+          <div className="flex justify-center space-x-3 mb-6 bg-gray-100 p-1.5 rounded-xl w-fit mx-auto">
+            <button
+              onClick={() => setInputMethod('camera')}
+              className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+                inputMethod === 'camera' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              📷 ถ่ายภาพ
+            </button>
+            <button
+              onClick={() => setInputMethod('upload')}
+              className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+                inputMethod === 'upload' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              📁 อัปโหลด
+            </button>
+          </div>
 
-        {isAnalyzing ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600 mb-4"></div>
-            <p className="text-lg font-medium text-gray-700">กำลังวิเคราะห์ภาพขยะด้วย AI...</p>
+          {isAnalyzing ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-6"></div>
+              <p className="text-lg font-bold text-gray-700">กำลังวิเคราะห์ภาพขยะด้วย AI...</p>
+              <p className="text-sm text-gray-400 mt-2">โปรดรอสักครู่</p>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl">
+              {inputMethod === 'camera' ? (
+                <Camera onCapture={handleImageSubmit} />
+              ) : (
+                <UploadBox onUpload={handleImageSubmit} />
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Stats Dashboard */}
+      <section className="mb-10">
+        {mode === 'general' ? (
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-bold mb-6 text-green-800 flex items-center">
+              📊 สถิติการแยกขยะของคุณ (ส่วนตัว)
+            </h2>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+              <StatCard title="สแกนทั้งหมด" value={stats.totalScanned} icon={Package} color="text-indigo-600" />
+              <StatCard title="จัดการแล้ว" value={stats.total} icon={CheckCircle} color="text-green-600" />
+            </div>
+            <div className="grid grid-cols-3 gap-3 md:gap-4">
+              <StatCard title="รีไซเคิล" value={stats.recycle} icon={Recycle} color="text-emerald-500" />
+              <StatCard title="ทั่วไป" value={stats.general} icon={Trash2} color="text-gray-500" />
+              <StatCard title="อันตราย" value={stats.hazardous} icon={AlertTriangle} color="text-red-500" />
+            </div>
           </div>
         ) : (
-          <div>
-            {inputMethod === 'camera' ? (
-              <Camera onCapture={handleImageSubmit} />
-            ) : (
-              <UploadBox onUpload={handleImageSubmit} />
-            )}
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-bold mb-6 text-blue-800 flex items-center">
+              🏫 สถิติภาพรวมโรงเรียน
+            </h2>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+              <StatCard title="สแกนทั้งหมด" value={schoolStats.totalScanned} icon={Package} color="text-indigo-600" />
+              <StatCard title="จัดการแล้ว" value={schoolStats.totalDisposed} icon={CheckCircle} color="text-blue-600" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <StatCard title="รีไซเคิล" value={schoolStats.recycle} icon={Recycle} color="text-emerald-500" />
+              <StatCard title="ทั่วไป" value={schoolStats.general} icon={Trash2} color="text-gray-500" />
+              <StatCard title="เศษอาหาร" value={schoolStats.organic} icon={Package} color="text-yellow-600" />
+              <StatCard title="อันตราย" value={schoolStats.hazardous} icon={AlertTriangle} color="text-red-500" />
+            </div>
           </div>
         )}
+      </section>
+
+      {/* Daily Tip */}
+      <section className="bg-green-50/80 p-5 md:p-6 rounded-2xl border border-green-200 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 shadow-sm">
+        <div className="text-4xl bg-white p-3 rounded-full shadow-sm shrink-0">🌱</div>
+        <div>
+          <h3 className="text-base font-bold text-green-800 mb-1">เคล็ดลับแยกขยะวันนี้</h3>
+          <p className="text-green-700 font-medium text-sm md:text-base leading-relaxed">{dailyTip}</p>
+        </div>
       </section>
     </main>
   );
