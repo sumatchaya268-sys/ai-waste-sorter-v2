@@ -66,6 +66,8 @@ export default function Home() {
     setSchoolStats(newSchoolStats);
   }, []);
 
+  const [allowImageUpload, setAllowImageUpload] = useState(true);
+
   const handleImageSubmit = async (imageSrc: string) => {
     setIsAnalyzing(true);
     try {
@@ -110,11 +112,32 @@ export default function Home() {
       if (response.ok) {
         let currentRecord = { ...data, mode };
         if (data.category !== 'ไม่ใช่ขยะ' && !data.category.includes('ไม่ใช่ขยะ')) {
-          const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
           const id = Date.now().toString();
-          const newRecord = { ...data, id, date: new Date().toISOString(), isDisposed: false, mode };
+          const userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substring(2, 9);
+          if (!localStorage.getItem('userId')) localStorage.setItem('userId', userId);
+          
+          const newRecord = { ...data, id, userId, date: new Date().toISOString(), isDisposed: false, mode };
+          
+          // Save to LocalStorage
+          const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
           localStorage.setItem('wasteHistory', JSON.stringify([newRecord, ...history]));
           currentRecord = newRecord;
+
+          // Save to Server Database (Vercel KV & Blob)
+          try {
+            fetch('/api/records', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'add',
+                record: newRecord,
+                imageBase64: allowImageUpload ? compressedImage : null,
+                allowImageUpload
+              }),
+            });
+          } catch (e) {
+            console.error('Failed to sync with server', e);
+          }
         }
         
         // Pass result via sessionStorage for the result page
@@ -247,6 +270,18 @@ export default function Home() {
             >
               📁 อัปโหลด
             </button>
+          </div>
+
+          <div className="flex items-center justify-center mb-6">
+            <label className="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+              <input
+                type="checkbox"
+                checked={allowImageUpload}
+                onChange={(e) => setAllowImageUpload(e.target.checked)}
+                className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+              />
+              <span>ยินยอมให้ระบบบันทึกภาพเพื่อใช้ในการศึกษาและสถิติ</span>
+            </label>
           </div>
 
           {isAnalyzing ? (

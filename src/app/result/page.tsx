@@ -94,13 +94,23 @@ export default function ResultPage() {
                 *การยืนยันเป็นข้อมูลที่คุณแจ้งด้วยตนเอง เพื่อบันทึกเป็นสถิติการจัดการขยะ
               </p>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (result.id) {
                     const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
                     const recordIndex = history.findIndex((h: any) => h.id === result.id);
                     if (recordIndex !== -1) {
                       history[recordIndex].isDisposed = true;
                       localStorage.setItem('wasteHistory', JSON.stringify(history));
+                    }
+                    
+                    try {
+                      await fetch('/api/records', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: result.id, isDisposed: true })
+                      });
+                    } catch (e) {
+                      console.error('Failed to update server record', e);
                     }
                   }
                   alert('บันทึกการจัดการขยะเรียบร้อยแล้ว ขอบคุณที่ช่วยรักษาสิ่งแวดล้อม!');
