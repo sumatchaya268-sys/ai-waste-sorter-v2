@@ -141,10 +141,54 @@ export default function Home() {
         </span>
       </header>
 
+      {/* Stats Dashboard */}
+      <section className="mb-6">
+        {mode === 'general' ? (
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-bold mb-6 text-green-800 flex items-center">
+              📊 สถิติการแยกขยะของคุณ (ส่วนตัว)
+            </h2>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+              <StatCard title="สแกนทั้งหมด" value={stats.totalScanned} icon={Package} color="text-indigo-600" />
+              <StatCard title="จัดการแล้ว" value={stats.total} icon={CheckCircle} color="text-green-600" />
+            </div>
+            <div className="grid grid-cols-3 gap-3 md:gap-4">
+              <StatCard title="รีไซเคิล" value={stats.recycle} icon={Recycle} color="text-emerald-500" />
+              <StatCard title="ทั่วไป" value={stats.general} icon={Trash2} color="text-gray-500" />
+              <StatCard title="อันตราย" value={stats.hazardous} icon={AlertTriangle} color="text-red-500" />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-bold mb-6 text-blue-800 flex items-center">
+              🏫 สถิติภาพรวมโรงเรียน
+            </h2>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+              <StatCard title="สแกนทั้งหมด" value={schoolStats.totalScanned} icon={Package} color="text-indigo-600" />
+              <StatCard title="จัดการแล้ว" value={schoolStats.totalDisposed} icon={CheckCircle} color="text-blue-600" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <StatCard title="รีไซเคิล" value={schoolStats.recycle} icon={Recycle} color="text-emerald-500" />
+              <StatCard title="ทั่วไป" value={schoolStats.general} icon={Trash2} color="text-gray-500" />
+              <StatCard title="เศษอาหาร" value={schoolStats.organic} icon={Package} color="text-yellow-600" />
+              <StatCard title="อันตราย" value={schoolStats.hazardous} icon={AlertTriangle} color="text-red-500" />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Daily Tip */}
+      <section className="mb-10 bg-green-50/80 p-5 md:p-6 rounded-2xl border border-green-200 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 shadow-sm">
+        <div className="text-4xl bg-white p-3 rounded-full shadow-sm shrink-0">🌱</div>
+        <div>
+          <h3 className="text-base font-bold text-green-800 mb-1">เคล็ดลับแยกขยะวันนี้</h3>
+          <p className="text-green-700 font-medium text-sm md:text-base leading-relaxed">{dailyTip}</p>
+        </div>
+      </section>
+
       {/* Mode Selection */}
-      <section className="mb-10">
+      <section className="mb-8">
         <h2 className="text-xl font-bold mb-5 text-gray-800 flex items-center">
-          <span className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
           เลือกโหมดการใช้งาน
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -181,9 +225,8 @@ export default function Home() {
       </section>
 
       {/* Input Method */}
-      <section className="mb-10">
+      <section className="mb-4">
         <h2 className="text-xl font-bold mb-5 text-gray-800 flex items-center">
-          <span className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
           สแกนเพื่อแยกประเภท
         </h2>
         <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200">
@@ -221,51 +264,6 @@ export default function Home() {
               )}
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Stats Dashboard */}
-      <section className="mb-10">
-        {mode === 'general' ? (
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold mb-6 text-green-800 flex items-center">
-              📊 สถิติการแยกขยะของคุณ (ส่วนตัว)
-            </h2>
-            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
-              <StatCard title="สแกนทั้งหมด" value={stats.totalScanned} icon={Package} color="text-indigo-600" />
-              <StatCard title="จัดการแล้ว" value={stats.total} icon={CheckCircle} color="text-green-600" />
-            </div>
-            <div className="grid grid-cols-3 gap-3 md:gap-4">
-              <StatCard title="รีไซเคิล" value={stats.recycle} icon={Recycle} color="text-emerald-500" />
-              <StatCard title="ทั่วไป" value={stats.general} icon={Trash2} color="text-gray-500" />
-              <StatCard title="อันตราย" value={stats.hazardous} icon={AlertTriangle} color="text-red-500" />
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold mb-6 text-blue-800 flex items-center">
-              🏫 สถิติภาพรวมโรงเรียน
-            </h2>
-            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
-              <StatCard title="สแกนทั้งหมด" value={schoolStats.totalScanned} icon={Package} color="text-indigo-600" />
-              <StatCard title="จัดการแล้ว" value={schoolStats.totalDisposed} icon={CheckCircle} color="text-blue-600" />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              <StatCard title="รีไซเคิล" value={schoolStats.recycle} icon={Recycle} color="text-emerald-500" />
-              <StatCard title="ทั่วไป" value={schoolStats.general} icon={Trash2} color="text-gray-500" />
-              <StatCard title="เศษอาหาร" value={schoolStats.organic} icon={Package} color="text-yellow-600" />
-              <StatCard title="อันตราย" value={schoolStats.hazardous} icon={AlertTriangle} color="text-red-500" />
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Daily Tip */}
-      <section className="bg-green-50/80 p-5 md:p-6 rounded-2xl border border-green-200 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 shadow-sm">
-        <div className="text-4xl bg-white p-3 rounded-full shadow-sm shrink-0">🌱</div>
-        <div>
-          <h3 className="text-base font-bold text-green-800 mb-1">เคล็ดลับแยกขยะวันนี้</h3>
-          <p className="text-green-700 font-medium text-sm md:text-base leading-relaxed">{dailyTip}</p>
         </div>
       </section>
     </main>
