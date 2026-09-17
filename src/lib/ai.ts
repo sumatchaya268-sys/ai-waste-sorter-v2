@@ -3,11 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 export async function analyzeWaste(imageBase64: string, mode: 'general' | 'school') {
   // Support multiple API keys separated by commas to bypass free tier rate limits
   const apiKeys = (process.env.GEMINI_API_KEY || '').split(',').map(k => k.trim()).filter(Boolean);
-  const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)] || '';
   
-  const genAI = new GoogleGenerativeAI(randomKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' }); // Updated to working 2026 model
-
   // Remove the data URL prefix if present
   const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
@@ -35,29 +31,50 @@ export async function analyzeWaste(imageBase64: string, mode: 'general' | 'schoo
     ไม่ต้องใส่ markdown formatting หรือ \`\`\`json กลับมา ให้ส่งคืนเป็น text ที่เป็น JSON ที่ถูกต้องเลย
   `;
 
-  try {
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: base64Data,
-          mimeType: 'image/jpeg',
-        },
-      },
-    ]);
+  let lastError: any = null;
+  // If no keys provided, it will try with empty string and fail normally
+  const numAttempts = Math.max(1, Math.min(apiKeys.length, 4));
+  
+  // Shuffle keys so we don't always start with the same one
+  const shuffledKeys = [...apiKeys].sort(() => Math.random() - 0.5);
 
-    const response = await result.response;
-    const text = response.text();
-    
-    // Extract JSON block using regex to avoid parsing errors from extra text
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('AI did not return valid JSON. Raw output: ' + text);
+  for (let i = 0; i < numAttempts; i++) {
+    try {
+      const currentKey = shuffledKeys[i] || '';
+      const genAI = new GoogleGenerativeAI(currentKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: base64Data,
+            mimeType: 'image/jpeg',
+          },
+        },
+      ]);
+
+      const response = await result.response;
+      const text = response.text();
+      
+      // Extract JSON block using regex to avoid parsing errors from extra text
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('AI did not return valid JSON. Raw output: ' + text);
+      }
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (error: any) {
+      console.error(`Attempt ${i + 1} failed:`, error.message);
+      lastError = error;
+      
+      // If we still have attempts left, wait 1 second before trying next key to be safe
+      if (i < numAttempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
     }
-    
-    return JSON.parse(jsonMatch[0]);
-  } catch (error: any) {
-    console.error('Error analyzing waste:', error);
-    throw new Error(error.message || 'Failed to analyze waste');
   }
+
+  throw new Error(lastError?.message || 'Failed to analyze waste after multiple attempts');
 }
