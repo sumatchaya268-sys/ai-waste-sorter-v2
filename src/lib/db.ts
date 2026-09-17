@@ -1,5 +1,7 @@
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { put } from '@vercel/blob';
+
+const kv = Redis.fromEnv();
 
 export type WasteRecord = {
   id: string;
