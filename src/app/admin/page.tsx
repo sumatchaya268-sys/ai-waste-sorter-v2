@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Package, CheckCircle, Recycle, Trash2, AlertTriangle, Search, X } from 'lucide-react';
 import StatCard from '@/components/StatCard';
-import { WasteRecord } from '@/lib/db';
+import type { WasteRecord } from '@/lib/db';
 
 export default function AdminDashboard() {
   const router = useRouter();
