@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer');
   page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
 
   try {
-    await page.goto('http://localhost:3000/', { waitUntil: 'networkidle0' });
+    await page.goto('https://ai-waste-sorter-v2.vercel.app', { waitUntil: 'networkidle0' });
     console.log('Main page loaded successfully');
   } catch (err) {
     console.error('Failed to load page:', err);

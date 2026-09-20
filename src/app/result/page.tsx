@@ -96,10 +96,15 @@ export default function ResultPage() {
               <button
                 onClick={async () => {
                   if (result.id) {
-                    const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
-                    const recordIndex = history.findIndex((h: any) => h.id === result.id);
-                    if (recordIndex !== -1) {
-                      history[recordIndex].isDisposed = true;
+                    let history = [];
+                    try {
+                      history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
+                    } catch(e) {
+                      history = [];
+                    }
+                    const index = history.findIndex((r: any) => r.id === result.id);
+                    if (index !== -1) {
+                      history[index].isDisposed = true;
                       localStorage.setItem('wasteHistory', JSON.stringify(history));
                     }
                     

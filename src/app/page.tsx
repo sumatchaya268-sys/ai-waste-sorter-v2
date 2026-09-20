@@ -33,7 +33,14 @@ export default function Home() {
     setDailyTip(tips[Math.floor(Math.random() * tips.length)]);
 
     // Load stats from localStorage
-    const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
+    let history = [];
+    try {
+      history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
+    } catch (e) {
+      console.error('Failed to parse wasteHistory from localStorage, resetting it.', e);
+      localStorage.setItem('wasteHistory', '[]');
+    }
+    
     let validWasteCount = 0;
     const newStats = { totalScanned: 0, total: 0, recycle: 0, general: 0, hazardous: 0, organic: 0 };
     const newSchoolStats = { totalScanned: 0, totalDisposed: 0, recycle: 0, general: 0, organic: 0, hazardous: 0 };
@@ -121,7 +128,12 @@ export default function Home() {
           const newRecord = { ...data, id, userId, date: new Date().toISOString(), isDisposed: false, mode };
           
           // Save to LocalStorage
-          const history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
+          let history = [];
+          try {
+            history = JSON.parse(localStorage.getItem('wasteHistory') || '[]');
+          } catch(e) {
+            history = [];
+          }
           localStorage.setItem('wasteHistory', JSON.stringify([newRecord, ...history]));
           currentRecord = newRecord;
 
