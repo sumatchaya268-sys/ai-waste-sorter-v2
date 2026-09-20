@@ -117,6 +117,7 @@ export default function AdminDashboard() {
     general: filteredRecords.filter(r => r.isDisposed && r.category.includes('ทั่วไป')).length,
     hazardous: filteredRecords.filter(r => r.isDisposed && r.category.includes('อันตราย')).length,
     organic: filteredRecords.filter(r => r.isDisposed && r.category.includes('เปียก')).length,
+  };
   const [showSettings, setShowSettings] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
