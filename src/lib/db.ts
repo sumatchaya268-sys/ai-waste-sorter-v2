@@ -1,7 +1,10 @@
 import { Redis } from '@upstash/redis';
 import { put } from '@vercel/blob';
 
-const kv = Redis.fromEnv();
+const kv = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || '',
+});
 
 export type WasteRecord = {
   id: string;

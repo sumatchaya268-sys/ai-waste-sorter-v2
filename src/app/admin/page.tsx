@@ -42,7 +42,8 @@ export default function AdminDashboard() {
         setIsLoggedIn(true);
         sessionStorage.setItem('adminPassword', pass);
       } else {
-        setError('รหัสผ่านไม่ถูกต้อง');
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || 'รหัสผ่านไม่ถูกต้อง หรือ Database ยังไม่ได้ตั้งค่า');
         sessionStorage.removeItem('adminPassword');
       }
     } catch (e) {
