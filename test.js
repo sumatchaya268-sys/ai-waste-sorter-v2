@@ -6,11 +6,10 @@ const puppeteer = require('puppeteer');
   
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
   page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
-  page.on('requestfailed', request => console.log('REQUEST FAILED:', request.url(), request.failure().errorText));
 
   try {
-    await page.goto('http://localhost:3000/admin', { waitUntil: 'networkidle0' });
-    console.log('Page loaded successfully');
+    await page.goto('http://localhost:3000/', { waitUntil: 'networkidle0' });
+    console.log('Main page loaded successfully');
   } catch (err) {
     console.error('Failed to load page:', err);
   }

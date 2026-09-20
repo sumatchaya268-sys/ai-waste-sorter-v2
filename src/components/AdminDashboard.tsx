@@ -115,9 +115,9 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       return (
-        record.userId.toLowerCase().includes(q) ||
-        record.itemName.toLowerCase().includes(q) ||
-        record.category.toLowerCase().includes(q)
+        record.userId?.toLowerCase().includes(q) ||
+        record.itemName?.toLowerCase().includes(q) ||
+        record.category?.toLowerCase().includes(q)
       );
     }
     return true;
@@ -126,10 +126,10 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
   const stats = {
     totalScans: filteredRecords.length,
     totalDisposed: filteredRecords.filter(r => r.isDisposed).length,
-    recycle: filteredRecords.filter(r => r.isDisposed && r.category.includes('รีไซเคิล')).length,
-    general: filteredRecords.filter(r => r.isDisposed && r.category.includes('ทั่วไป')).length,
-    hazardous: filteredRecords.filter(r => r.isDisposed && r.category.includes('อันตราย')).length,
-    organic: filteredRecords.filter(r => r.isDisposed && r.category.includes('เปียก')).length,
+    recycle: filteredRecords.filter(r => r.isDisposed && r.category?.includes('รีไซเคิล')).length,
+    general: filteredRecords.filter(r => r.isDisposed && r.category?.includes('ทั่วไป')).length,
+    hazardous: filteredRecords.filter(r => r.isDisposed && r.category?.includes('อันตราย')).length,
+    organic: filteredRecords.filter(r => r.isDisposed && r.category?.includes('เปียก')).length,
   };
   const [showSettings, setShowSettings] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -251,12 +251,12 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
                       <td className="p-4 text-sm font-medium text-gray-900">{record.itemName}</td>
                       <td className="p-4 text-sm">
                         <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          record.category.includes('รีไซเคิล') ? 'bg-green-100 text-green-700' :
-                          record.category.includes('อันตราย') ? 'bg-red-100 text-red-700' :
-                          record.category.includes('เปียก') ? 'bg-yellow-100 text-yellow-700' :
+                          record.category?.includes('รีไซเคิล') ? 'bg-green-100 text-green-700' :
+                          record.category?.includes('อันตราย') ? 'bg-red-100 text-red-700' :
+                          record.category?.includes('เปียก') ? 'bg-yellow-100 text-yellow-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
-                          {record.category}
+                          {record.category || 'ไม่ทราบหมวดหมู่'}
                         </span>
                       </td>
                       <td className="p-4 text-sm text-gray-600">{record.mode === 'school' ? 'โรงเรียน' : 'ทั่วไป'}</td>

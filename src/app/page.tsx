@@ -40,7 +40,7 @@ export default function Home() {
     
     history.forEach((item: any) => {
       // ข้ามการนับสถิติถ้า AI บอกว่าไม่ใช่ขยะ
-      if (item.category === 'ไม่ใช่ขยะ' || item.category.includes('ไม่ใช่ขยะ')) return;
+      if (!item.category || item.category === 'ไม่ใช่ขยะ' || item.category.includes('ไม่ใช่ขยะ')) return;
       
       if (item.mode === 'general' || !item.mode) {
         newStats.totalScanned++;
