@@ -29,6 +29,13 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<WasteRecord | null>(null);
 
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [settingsMsg, setSettingsMsg] = useState({ type: '', text: '' });
+  const [changingPwd, setChangingPwd] = useState(false);
+
   // Check if already logged in via sessionStorage
   useEffect(() => {
     const savedPassword = sessionStorage.getItem('adminPassword');
@@ -131,12 +138,6 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
     hazardous: filteredRecords.filter(r => r.isDisposed && r.category?.includes('อันตราย')).length,
     organic: filteredRecords.filter(r => r.isDisposed && r.category?.includes('เปียก')).length,
   };
-  const [showSettings, setShowSettings] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [settingsMsg, setSettingsMsg] = useState({ type: '', text: '' });
-  const [changingPwd, setChangingPwd] = useState(false);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
