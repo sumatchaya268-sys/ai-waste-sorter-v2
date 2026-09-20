@@ -301,6 +301,15 @@ export default function Home() {
           )}
         </div>
       </section>
+      
+      <footer className="mt-12 text-center pb-8">
+        <button 
+          onClick={() => router.push('/admin')}
+          className="text-xs text-gray-400 hover:text-gray-600 transition underline-offset-4 hover:underline"
+        >
+          Admin Login
+        </button>
+      </footer>
     </main>
   );
 }

@@ -117,17 +117,62 @@ export default function AdminDashboard() {
     general: filteredRecords.filter(r => r.isDisposed && r.category.includes('ทั่วไป')).length,
     hazardous: filteredRecords.filter(r => r.isDisposed && r.category.includes('อันตราย')).length,
     organic: filteredRecords.filter(r => r.isDisposed && r.category.includes('เปียก')).length,
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [settingsMsg, setSettingsMsg] = useState({ type: '', text: '' });
+  const [changingPwd, setChangingPwd] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSettingsMsg({ type: '', text: '' });
+
+    if (newPassword !== confirmPassword) {
+      setSettingsMsg({ type: 'error', text: 'รหัสผ่านใหม่ไม่ตรงกัน' });
+      return;
+    }
+    
+    if (newPassword.length < 4) {
+      setSettingsMsg({ type: 'error', text: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร' });
+      return;
+    }
+
+    setChangingPwd(true);
+    try {
+      const res = await fetch('/api/admin/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSettingsMsg({ type: 'success', text: 'เปลี่ยนรหัสผ่านสำเร็จ!' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        sessionStorage.setItem('adminPassword', newPassword); // Update current session
+      } else {
+        setSettingsMsg({ type: 'error', text: data.error || 'เกิดข้อผิดพลาด' });
+      }
+    } catch (error) {
+      setSettingsMsg({ type: 'error', text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' });
+    }
+    setChangingPwd(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-10">
       <nav className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <h1 className="text-xl font-bold text-gray-800">🛠️ Admin Dashboard</h1>
-        <div className="flex space-x-4">
-          <button onClick={() => handleLogin()} className="text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium transition">
-            🔄 รีเฟรชข้อมูล
+        <div className="flex space-x-2 md:space-x-4">
+          <button onClick={() => handleLogin(sessionStorage.getItem('adminPassword') || password)} className="text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium transition text-sm md:text-base">
+            🔄 รีเฟรช
           </button>
-          <button onClick={handleLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition">
+          <button onClick={() => setShowSettings(true)} className="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded-lg font-medium transition text-sm md:text-base">
+            ⚙️ ตั้งค่า
+          </button>
+          <button onClick={handleLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition text-sm md:text-base">
             ออกจากระบบ
           </button>
         </div>
@@ -282,6 +327,67 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="font-bold text-gray-800">⚙️ ตั้งค่าบัญชี (เปลี่ยนรหัสผ่าน)</h3>
+              <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-gray-200 rounded-full transition"><X className="w-5 h-5 text-gray-500" /></button>
+            </div>
+            
+            <form onSubmit={handleChangePassword} className="p-6">
+              {settingsMsg.text && (
+                <div className={`p-3 rounded-lg mb-4 text-sm font-medium ${settingsMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {settingsMsg.text}
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">รหัสผ่านปัจจุบัน</label>
+                  <input 
+                    type="password" 
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">รหัสผ่านใหม่</label>
+                  <input 
+                    type="password" 
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ยืนยันรหัสผ่านใหม่</label>
+                  <input 
+                    type="password" 
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end space-x-3">
+                <button type="button" onClick={() => setShowSettings(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition font-medium">
+                  ยกเลิก
+                </button>
+                <button type="submit" disabled={changingPwd} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium disabled:opacity-50">
+                  {changingPwd ? 'กำลังบันทึก...' : 'เปลี่ยนรหัสผ่าน'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

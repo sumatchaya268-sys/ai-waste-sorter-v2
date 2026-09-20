@@ -1,12 +1,28 @@
 import { NextResponse } from 'next/server';
-import { addRecord, getAllRecords, updateRecordDisposal, WasteRecord, uploadImage } from '@/lib/db';
+import { addRecord, getAllRecords, updateRecordDisposal, WasteRecord, uploadImage, getAdminPasswordHash, hashPassword } from '@/lib/db';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('Authorization');
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin1234';
-  
-  if (authHeader !== `Bearer ${adminPassword}`) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const providedPassword = authHeader.replace('Bearer ', '');
+  const providedHash = hashPassword(providedPassword);
+  
+  const savedHash = await getAdminPasswordHash();
+  
+  if (savedHash) {
+    // Check against DB hash
+    if (providedHash !== savedHash) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  } else {
+    // Fallback to ENV password if DB hash doesn't exist
+    const envPassword = process.env.ADMIN_PASSWORD || 'admin1234';
+    if (providedPassword !== envPassword) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
 
   const records = await getAllRecords();

@@ -74,3 +74,29 @@ export async function updateRecordDisposal(id: string, isDisposed: boolean) {
     console.error('Error updating record in KV:', error);
   }
 }
+
+// ----------------------
+// Password Management
+// ----------------------
+import crypto from 'crypto';
+
+export function hashPassword(password: string): string {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+export async function getAdminPasswordHash(): Promise<string | null> {
+  try {
+    return await kv.get<string>('admin_password_hash');
+  } catch (error) {
+    console.error('Error fetching password from KV:', error);
+    return null;
+  }
+}
+
+export async function setAdminPasswordHash(hash: string) {
+  try {
+    await kv.set('admin_password_hash', hash);
+  } catch (error) {
+    console.error('Error setting password in KV:', error);
+  }
+}
