@@ -4,7 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Package, CheckCircle, Recycle, Trash2, AlertTriangle, Search, X } from 'lucide-react';
 import StatCard from '@/components/StatCard';
-import type { WasteRecord } from '@/lib/db';
+
+export type WasteRecord = {
+  id: string;
+  userId: string;
+  itemName: string;
+  category: string;
+  confidence: number;
+  disposalSteps: string;
+  isHardToDispose: boolean;
+  warningMessage?: string | null;
+  mode: string;
+  isDisposed: boolean;
+  date: string;
+  imageUrl?: string | null;
+};
 
 export default function AdminDashboard() {
   const router = useRouter();
