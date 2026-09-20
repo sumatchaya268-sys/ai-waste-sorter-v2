@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Package, CheckCircle, Recycle, Trash2, AlertTriangle, Search, X } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 
@@ -20,8 +19,7 @@ export type WasteRecord = {
   imageUrl?: string | null;
 };
 
-export default function AdminDashboard() {
-  const router = useRouter();
+export default function AdminDashboard({ onExit }: { onExit: () => void }) {
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [records, setRecords] = useState<WasteRecord[]>([]);
@@ -102,7 +100,7 @@ export default function AdminDashboard() {
           </button>
           
           <button
-            onClick={() => router.push('/')}
+            onClick={onExit}
             className="w-full py-3 mt-3 text-gray-500 hover:bg-gray-100 rounded-xl transition"
           >
             กลับหน้าแรก

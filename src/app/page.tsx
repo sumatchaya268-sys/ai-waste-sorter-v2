@@ -6,6 +6,7 @@ import Camera from '@/components/Camera';
 import UploadBox from '@/components/UploadBox';
 import StatCard from '@/components/StatCard';
 import { Trash2, Recycle, AlertTriangle, Package, CheckCircle } from 'lucide-react';
+import AdminDashboard from '@/components/AdminDashboard';
 
 type Mode = 'general' | 'school';
 
@@ -19,6 +20,7 @@ const tips = [
 
 export default function Home() {
   const router = useRouter();
+  const [showAdmin, setShowAdmin] = useState(false);
   const [mode, setMode] = useState<Mode>('general');
   const [inputMethod, setInputMethod] = useState<'camera' | 'upload'>('camera');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -153,6 +155,10 @@ export default function Home() {
       setIsAnalyzing(false);
     }
   };
+
+  if (showAdmin) {
+    return <AdminDashboard onExit={() => setShowAdmin(false)} />;
+  }
 
   return (
     <main className="min-h-screen p-6 md:p-8 max-w-3xl mx-auto font-sans bg-gray-50">
@@ -304,7 +310,7 @@ export default function Home() {
       
       <footer className="mt-12 text-center pb-8">
         <button 
-          onClick={() => router.push('/admin')}
+          onClick={() => setShowAdmin(true)}
           className="text-xs text-gray-400 hover:text-gray-600 transition underline-offset-4 hover:underline"
         >
           Admin Login
