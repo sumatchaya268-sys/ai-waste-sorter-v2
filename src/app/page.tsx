@@ -164,21 +164,47 @@ export default function Home() {
         ไม่ต้องใส่ markdown formatting หรือ \`\`\`json กลับมา ให้ส่งคืนเป็น text ที่เป็น JSON ที่ถูกต้องเลย
       `;
 
-      const result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            data: compressedImage.replace(/^data:image\/\w+;base64,/, ""),
-            mimeType: 'image/jpeg',
-          },
-        },
-      ]);
-
-      const text = result.response.text();
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('AI did not return valid JSON');
+      let data = null;
+      let lastError: any = null;
       
-      const data = JSON.parse(jsonMatch[0]);
+      // Retry loop for 503 High Demand errors
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          const result = await model.generateContent([
+            prompt,
+            {
+              inlineData: {
+                data: compressedImage.replace(/^data:image\/\w+;base64,/, ""),
+                mimeType: 'image/jpeg',
+              },
+            },
+          ]);
+
+          const text = result.response.text();
+          const jsonMatch = text.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) throw new Error('AI did not return valid JSON');
+          
+          data = JSON.parse(jsonMatch[0]);
+          break; // Success, exit retry loop
+        } catch (e: any) {
+          lastError = e;
+          // If it's a 503 high demand error or 429 quota, wait and retry
+          if (e.message && (e.message.includes('503') || e.message.includes('high demand') || e.message.includes('429') || e.message.includes('quota'))) {
+            if (attempt < 3) {
+              console.warn(`Attempt ${attempt} failed with ${e.message.includes('429') ? '429' : '503'}, retrying in 2s...`);
+              await new Promise(r => setTimeout(r, 2000));
+              continue;
+            } else {
+              throw new Error('เซิร์ฟเวอร์ AI ของ Google มีผู้ใช้งานหนาแน่นมาก โปรดเว้นระยะสักครู่แล้วลองใหม่ครับ');
+            }
+          }
+          // For other errors, throw immediately
+          throw e;
+        }
+      }
+
+      if (!data) throw lastError;
+
       const response = { ok: true };
       
       if (response.ok) {
