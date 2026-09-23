@@ -109,7 +109,6 @@ export default function Home() {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.onload = () => {
-            if (base64Str.startsWith('blob:')) URL.revokeObjectURL(base64Str);
             let width = img.width;
             let height = img.height;
             if (width > height && width > maxWidth) {
@@ -127,7 +126,6 @@ export default function Home() {
             resolve(canvas.toDataURL('image/jpeg', 0.8));
           };
           img.onerror = () => {
-            if (base64Str.startsWith('blob:')) URL.revokeObjectURL(base64Str);
             reject(new Error('เบราว์เซอร์ไม่สามารถอ่านไฟล์ภาพนี้ได้ (อาจเป็นไฟล์ HEIC หรือฟอร์แมตที่ไม่รองรับ) โปรดลองถ่ายใหม่หรือใช้รูป JPG/PNG ปกติครับ'));
           };
           img.src = base64Str;
