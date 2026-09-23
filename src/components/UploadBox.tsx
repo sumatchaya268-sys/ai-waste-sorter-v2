@@ -12,11 +12,9 @@ export default function UploadBox({ onUpload }: UploadBoxProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpload(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Use createObjectURL instead of readAsDataURL to save massive amounts of RAM on mobile
+      const objectUrl = URL.createObjectURL(file);
+      onUpload(objectUrl);
     }
   };
 

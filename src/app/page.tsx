@@ -109,6 +109,7 @@ export default function Home() {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.onload = () => {
+            if (base64Str.startsWith('blob:')) URL.revokeObjectURL(base64Str);
             let width = img.width;
             let height = img.height;
             if (width > height && width > maxWidth) {
@@ -126,6 +127,7 @@ export default function Home() {
             resolve(canvas.toDataURL('image/jpeg', 0.8));
           };
           img.onerror = () => {
+            if (base64Str.startsWith('blob:')) URL.revokeObjectURL(base64Str);
             reject(new Error('เบราว์เซอร์ไม่สามารถอ่านไฟล์ภาพนี้ได้ (อาจเป็นไฟล์ HEIC หรือฟอร์แมตที่ไม่รองรับ) โปรดลองถ่ายใหม่หรือใช้รูป JPG/PNG ปกติครับ'));
           };
           img.src = base64Str;
@@ -173,9 +175,9 @@ export default function Home() {
       // Retry loop for 503 High Demand errors
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          // Add a 30-second timeout to prevent infinite hanging
+          // Add a 45-second timeout to prevent infinite hanging
           const timeoutPromise = new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('เซิร์ฟเวอร์ตอบสนองช้าเกินไป (Timeout) โปรดลองใหม่อีกครั้ง')), 30000)
+            setTimeout(() => reject(new Error('เซิร์ฟเวอร์ตอบสนองช้าเกินไป (Timeout) โปรดลองใหม่อีกครั้ง')), 45000)
           );
 
           const aiPromise = model.generateContent([
