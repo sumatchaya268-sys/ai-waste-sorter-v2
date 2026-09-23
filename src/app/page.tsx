@@ -106,9 +106,8 @@ export default function Home() {
     try {
       // Compress image to prevent "Payload Too Large" error
       const compressImage = (base64Str: string, maxWidth = 800, maxHeight = 800): Promise<string> => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           const img = new Image();
-          img.src = base64Str;
           img.onload = () => {
             let width = img.width;
             let height = img.height;
@@ -126,6 +125,10 @@ export default function Home() {
             ctx?.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', 0.8));
           };
+          img.onerror = () => {
+            reject(new Error('เบราว์เซอร์ไม่สามารถอ่านไฟล์ภาพนี้ได้ (อาจเป็นไฟล์ HEIC หรือฟอร์แมตที่ไม่รองรับ) โปรดลองถ่ายใหม่หรือใช้รูป JPG/PNG ปกติครับ'));
+          };
+          img.src = base64Str;
         });
       };
       
@@ -170,7 +173,12 @@ export default function Home() {
       // Retry loop for 503 High Demand errors
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          const result = await model.generateContent([
+          // Add a 30-second timeout to prevent infinite hanging
+          const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('เซิร์ฟเวอร์ตอบสนองช้าเกินไป (Timeout) โปรดลองใหม่อีกครั้ง')), 30000)
+          );
+
+          const aiPromise = model.generateContent([
             prompt,
             {
               inlineData: {
@@ -179,6 +187,8 @@ export default function Home() {
               },
             },
           ]);
+
+          const result = await Promise.race([aiPromise, timeoutPromise]);
 
           const text = result.response.text();
           const jsonMatch = text.match(/\{[\s\S]*\}/);
