@@ -18,6 +18,27 @@ const tips = [
   "💡 กล่องกระดาษที่เปียกหรือเปื้อนอาหารอาจไม่เหมาะสำหรับการรีไซเคิล"
 ];
 
+let cachedGenAI: any = null;
+let aiInitPromise: Promise<any> | null = null;
+
+function initAI() {
+  if (!aiInitPromise) {
+    aiInitPromise = (async () => {
+      try {
+        const keyRes = await fetch('/api/config');
+        const { key } = await keyRes.json();
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        cachedGenAI = new GoogleGenerativeAI(key);
+        return cachedGenAI;
+      } catch (e) {
+        console.error("Failed to init AI", e);
+        throw e;
+      }
+    })();
+  }
+  return aiInitPromise;
+}
+
 export default function Home() {
   const router = useRouter();
   const [showAdmin, setShowAdmin] = useState(false);
@@ -29,6 +50,9 @@ export default function Home() {
   const [dailyTip, setDailyTip] = useState(tips[0]);
 
   useEffect(() => {
+    // Preload AI models to make scanning faster
+    initAI().catch(console.error);
+
     // Set random tip
     setDailyTip(tips[Math.floor(Math.random() * tips.length)]);
 
@@ -110,13 +134,8 @@ export default function Home() {
       // Store current image temporarily to pass to result page
       sessionStorage.setItem('currentImage', compressedImage);
       
-      // Fetch config to get API key
-      const keyRes = await fetch('/api/config');
-      const { key } = await keyRes.json();
-      
-      // Dynamically import to avoid large client bundle on first load
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(key);
+      // Get preloaded AI instance (or wait for it if still loading)
+      const genAI = cachedGenAI || await initAI();
       const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
       
       const modeInstructions = mode === 'general' 
@@ -350,7 +369,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center py-16">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-6"></div>
               <p className="text-lg font-bold text-gray-700">กำลังวิเคราะห์ภาพขยะด้วย AI...</p>
-              <p className="text-sm text-gray-400 mt-2">โปรดรอสักครู่</p>
+              <p className="text-sm text-gray-400 mt-2">โปรดรอสักครู่ (อาจใช้เวลา 5-10 วินาที)</p>
             </div>
           ) : (
             <div className="overflow-hidden rounded-2xl">
