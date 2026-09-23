@@ -19,6 +19,7 @@ export type WasteRecord = {
   isDisposed: boolean;
   date: string;
   imageUrl?: string | null;
+  imageConsent?: boolean;
 };
 
 // Upload an image to Vercel Blob

@@ -55,7 +55,7 @@ export default function Home() {
           validWasteCount++;
           if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newStats.recycle++;
           else if (item.category.includes('อันตราย')) newStats.hazardous++;
-          else if (item.category.includes('ขยะเปียก') || item.category.includes('เศษอาหาร') || item.category.includes('ใบไม้')) newStats.organic++;
+          else if (item.category.includes('ขยะเปียก') || item.category.includes('อินทรีย์') || item.category.includes('เศษอาหาร') || item.category.includes('ใบไม้')) newStats.organic++;
           else newStats.general++;
         }
       } else if (item.mode === 'school') {
@@ -64,7 +64,7 @@ export default function Home() {
           newSchoolStats.totalDisposed++;
           if (item.category.includes('รีไซเคิล') || item.category.includes('ขวดน้ำ')) newSchoolStats.recycle++;
           else if (item.category.includes('อันตราย')) newSchoolStats.hazardous++;
-          else if (item.category.includes('ขยะเปียก') || item.category.includes('เศษอาหาร') || item.category.includes('ใบไม้')) newSchoolStats.organic++;
+          else if (item.category.includes('ขยะเปียก') || item.category.includes('อินทรีย์') || item.category.includes('เศษอาหาร') || item.category.includes('ใบไม้')) newSchoolStats.organic++;
           else newSchoolStats.general++;
         }
       }
@@ -125,7 +125,7 @@ export default function Home() {
           const userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substring(2, 9);
           if (!localStorage.getItem('userId')) localStorage.setItem('userId', userId);
           
-          const newRecord = { ...data, id, userId, date: new Date().toISOString(), isDisposed: false, mode };
+          const newRecord = { ...data, id, userId, date: new Date().toISOString(), isDisposed: false, mode, imageConsent: allowImageUpload };
           
           // Save to LocalStorage
           let history = [];

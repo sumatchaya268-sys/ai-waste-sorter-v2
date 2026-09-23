@@ -45,7 +45,8 @@ export async function POST(request: Request) {
       
       const newRecord: WasteRecord = {
         ...record,
-        imageUrl
+        imageUrl,
+        imageConsent: allowImageUpload
       };
       
       await addRecord(newRecord);

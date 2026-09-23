@@ -17,6 +17,7 @@ export type WasteRecord = {
   isDisposed: boolean;
   date: string;
   imageUrl?: string | null;
+  imageConsent?: boolean;
 };
 
 export default function AdminDashboard({ onExit }: { onExit: () => void }) {
@@ -136,7 +137,7 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
     recycle: filteredRecords.filter(r => r.isDisposed && r.category?.includes('รีไซเคิล')).length,
     general: filteredRecords.filter(r => r.isDisposed && r.category?.includes('ทั่วไป')).length,
     hazardous: filteredRecords.filter(r => r.isDisposed && r.category?.includes('อันตราย')).length,
-    organic: filteredRecords.filter(r => r.isDisposed && r.category?.includes('เปียก')).length,
+    organic: filteredRecords.filter(r => r.isDisposed && (r.category?.includes('เปียก') || r.category?.includes('อินทรีย์') || r.category?.includes('ใบไม้') || r.category?.includes('เศษอาหาร'))).length,
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -254,7 +255,7 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
                         <span className={`px-2 py-1 rounded-md text-xs font-medium ${
                           record.category?.includes('รีไซเคิล') ? 'bg-green-100 text-green-700' :
                           record.category?.includes('อันตราย') ? 'bg-red-100 text-red-700' :
-                          record.category?.includes('เปียก') ? 'bg-yellow-100 text-yellow-700' :
+                          (record.category?.includes('เปียก') || record.category?.includes('อินทรีย์') || record.category?.includes('ใบไม้') || record.category?.includes('เศษอาหาร')) ? 'bg-yellow-100 text-yellow-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {record.category || 'ไม่ทราบหมวดหมู่'}
@@ -295,12 +296,22 @@ export default function AdminDashboard({ onExit }: { onExit: () => void }) {
             </div>
             
             <div className="p-6 max-h-[80vh] overflow-y-auto">
-              {selectedRecord.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={selectedRecord.imageUrl} alt="Waste" className="w-full h-48 object-cover rounded-xl mb-4 bg-gray-100 border border-gray-200" />
-              ) : (
+              {selectedRecord.imageConsent === false ? (
                 <div className="w-full h-24 flex items-center justify-center bg-gray-100 rounded-xl mb-4 border border-dashed border-gray-300">
                   <p className="text-gray-400 text-sm">ผู้ใช้ไม่ยินยอมให้เก็บภาพ</p>
+                </div>
+              ) : selectedRecord.imageUrl ? (
+                <div className="mb-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={selectedRecord.imageUrl} alt="Waste" className="w-full h-48 object-cover rounded-xl bg-gray-100 border border-gray-200" />
+                  <p className="text-xs text-green-600 mt-2 flex items-center"><CheckCircle className="w-3 h-3 mr-1"/> ผู้ใช้ยินยอมให้จัดเก็บภาพ</p>
+                </div>
+              ) : (
+                <div className="w-full h-24 flex flex-col items-center justify-center bg-gray-100 rounded-xl mb-4 border border-dashed border-gray-300">
+                  <p className="text-gray-400 text-sm">ไม่มีรูปภาพ (โหลดไม่สำเร็จ หรือข้อมูลเก่า)</p>
+                  {selectedRecord.imageConsent === true && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center"><CheckCircle className="w-3 h-3 mr-1"/> ผู้ใช้ยินยอมให้จัดเก็บภาพ</p>
+                  )}
                 </div>
               )}
               
