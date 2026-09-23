@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { analyzeWaste } from '@/lib/ai';
 
-export const maxDuration = 60; // Prevent Vercel 10s timeout
+export const maxDuration = 60; // Prevent Vercel 10s timeout on Pro
+export const runtime = 'edge'; // Use Edge runtime for 30s timeout on Hobby
 
 export async function POST(req: Request) {
   try {

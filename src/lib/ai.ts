@@ -44,7 +44,7 @@ export async function analyzeWaste(imageBase64: string, mode: 'general' | 'schoo
     try {
       const currentKey = shuffledKeys[i] || '';
       const genAI = new GoogleGenerativeAI(currentKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const result = await model.generateContent([
         prompt,
